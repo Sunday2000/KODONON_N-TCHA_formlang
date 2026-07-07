@@ -16,13 +16,17 @@ class DFA:
             self.alphabet = {a for (_, a) in self.transitions}
 
     def run(self, w: str):
-        # TODO (E1.1) : partir de self.start, suivre self.transitions lettre par
-        # lettre ; renvoyer None si une transition manque, sinon l'état atteint.
-        raise NotImplementedError("DFA.run — à compléter (E1.1)")
+        accept = None
+        seen = self._reachable()
+
+        for s in seen:
+            for l in w:
+                to_check = (s,l) if accept == None else (accept,l)
+                accept = self.transitions[to_check]
+        return accept in self.accept
 
     def accepts(self, w: str) -> bool:
-        # TODO (E1.1) : True ssi run(w) in self.accept.
-        raise NotImplementedError("DFA.accepts — à compléter (E1.1)")
+        return self.run(w)
 
     # ----- fourni : utilitaires pour la minimisation --------------------------
     def _reachable(self) -> set:
