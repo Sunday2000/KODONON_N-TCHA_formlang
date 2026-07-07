@@ -10,8 +10,25 @@ class CFG:
     nonterminals: set
 
     def generate(self, max_len: int) -> set:
-        # TODO (E2.2) : énumérer les mots TERMINAUX dérivables de longueur <= max_len.
-        raise NotImplementedError("CFG.generate — à compléter (E2.2)")
+        lang = {nt: set() for nt in self.nonterminals}
+        changed = True
+        while changed:
+            changed = False
+            for nt in self.nonterminals:
+                produced = set(lang[nt])
+                for production in self.rules.get(nt, []):
+                    candidates = {""}
+                    for sym in production:
+                        options = lang[sym] if sym in self.nonterminals else {sym}
+                        candidates = {c + o for c in candidates for o in options
+                                      if len(c) + len(o) <= max_len}
+                        if not candidates:
+                            break
+                    produced |= candidates
+                if produced != lang[nt]:
+                    lang[nt] = produced
+                    changed = True
+        return lang[self.start]
 
 
 def balanced_cfg() -> "CFG":

@@ -9,5 +9,11 @@ class DelimiterPDA:
         self.ignore = set(ignore)
 
     def accepts(self, w: str) -> bool:
-        # TODO (E2.1) : avec une pile (list).
-        raise NotImplementedError("DelimiterPDA.accepts — à compléter (E2.1)")
+        stack = []
+        for ch in w:
+            if ch in self.open:
+                stack.append(ch)
+            elif ch in self.match:
+                if not stack or stack.pop() != self.match[ch]:
+                    return False
+        return not stack

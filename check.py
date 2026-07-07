@@ -12,5 +12,6 @@ def test_detector_or():
 seen = detector_dfa()._reachable()
 completed = detector_dfa()._completed()
 
-print(f"seen {seen}")
-print(f"completed {completed}")
+# print(f"seen {seen}")
+# print(f"completed {completed}")
+print(f"accepted:{detector_dfa().stateAlphabet('B')}")

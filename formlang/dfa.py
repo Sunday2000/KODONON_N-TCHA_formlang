@@ -16,14 +16,10 @@ class DFA:
             self.alphabet = {a for (_, a) in self.transitions}
 
     def run(self, w: str):
-        accept = None
-        seen = self._reachable()
-
-        for s in seen:
-            for l in w:
-                to_check = (s,l) if accept == None else (accept,l)
-                accept = self.transitions[to_check]
-        return accept in self.accept
+        state = self.start
+        for l in w:
+            state = self.transitions[(state, l)]
+        return state in self.accept
 
     def accepts(self, w: str) -> bool:
         return self.run(w)
@@ -55,10 +51,55 @@ class DFA:
             for a in self.alphabet:
                 trans[(SINK, a)] = SINK
         return states, trans
+    
+    def moore(self, *packets):
+        _, trans = self._completed()
+        alphabet = sorted(self.alphabet)
+
+        def block_of(state):
+            for i, p in enumerate(packets):
+                if state in p:
+                    return i
+            return None
+
+        new_packets = []
+        for block in packets:
+            groups = {}
+            for state in block:
+                signature = tuple(block_of(trans[(state, a)]) for a in alphabet)
+                groups.setdefault(signature, set()).add(state)
+            new_packets.extend(groups.values())
+
+        if len(new_packets) == len(packets):
+            return tuple(packets)
+        return self.moore(*new_packets)
 
     def minimize(self) -> "DFA":
-        # TODO (E1.2) : raffinement de partition (Moore).
-        raise NotImplementedError("DFA.minimize — à compléter (E1.2)")
+        states, trans = self._completed()
+        packet_1 = states - self.accept
+        packet_2 = states & self.accept
+        packets = tuple(p for p in (packet_1, packet_2) if p)
+
+        blocks = self.moore(*packets)
+
+        block_of_state = {}
+        for block in blocks:
+            fblock = frozenset(block)
+            for s in block:
+                block_of_state[s] = fblock
+
+        new_transitions = {}
+        for block in blocks:
+            rep = next(iter(block))
+            fblock = frozenset(block)
+            for a in self.alphabet:
+                new_transitions[(fblock, a)] = block_of_state[trans[(rep, a)]]
+
+        new_start = block_of_state[self.start]
+        new_accept = {frozenset(block) for block in blocks if block & self.accept}
+
+        return DFA(transitions=new_transitions, start=new_start,
+                   accept=new_accept, alphabet=self.alphabet)
 
     def num_states(self) -> int:
         st = {self.start}

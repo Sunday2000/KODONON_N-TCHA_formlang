@@ -31,12 +31,13 @@ class TreeAutomaton:
         self.delta[(symbol, tuple(child_states))] = result
 
     def run(self, t: "Term"):
-        # TODO (E3.1) : étiquetage POST-ORDRE (feuilles -> racine).
-        raise NotImplementedError("TreeAutomaton.run — à compléter (E3.1)")
+        child_states = tuple(self.run(c) for c in t.children)
+        if REJECT in child_states:
+            return REJECT
+        return self.delta.get((t.symbol, child_states), REJECT)
 
     def accepts(self, t: "Term") -> bool:
-        # TODO (E3.1) : True ssi run(t) in self.final.
-        raise NotImplementedError("TreeAutomaton.accepts — à compléter (E3.1)")
+        return self.run(t) in self.final
 
 
 def product(a1: "TreeAutomaton", a2: "TreeAutomaton") -> "TreeAutomaton":
