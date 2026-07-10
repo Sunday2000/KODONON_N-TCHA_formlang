@@ -41,5 +41,9 @@ class TreeAutomaton:
 
 
 def product(a1: "TreeAutomaton", a2: "TreeAutomaton") -> "TreeAutomaton":
-    # TODO (E3.4) : automate produit, L = L(a1) inter L(a2).
-    raise NotImplementedError("product — à compléter (E3.4)")
+    P = TreeAutomaton(final_states={(f1, f2) for f1 in a1.final for f2 in a2.final})
+    for (sym1, children1), r1 in a1.delta.items():
+        for (sym2, children2), r2 in a2.delta.items():
+            if sym1 == sym2 and len(children1) == len(children2):
+                P.add_rule(sym1, tuple(zip(children1, children2)), (r1, r2))
+    return P

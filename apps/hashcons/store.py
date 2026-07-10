@@ -15,17 +15,19 @@ class CompactStore:
         self._total = 0
 
     def intern(self, t: Term) -> NodeId:
-        # TODO (E4) :
-        #   1. interner récursivement chaque enfant -> kids_ids (tuple) ;
-        #   2. incrémenter self._total ;
-        #   3. clé canonique = (t.symbol, t.label, kids_ids) ;
-        #   4. si déjà dans self._table -> renvoyer l'id existant,
-        #      sinon créer un nouvel id (= len(self._nodes)), l'enregistrer.
-        raise NotImplementedError("CompactStore.intern — à compléter (E4)")
+        kids_ids = tuple(self.intern(c) for c in t.children)
+        self._total += 1
+        key = (t.symbol, t.label, kids_ids)
+        if key in self._table:
+            return self._table[key]
+        nid = len(self._nodes)
+        self._nodes.append(key)
+        self._table[key] = nid
+        return nid
 
     def get(self, nid: NodeId) -> Term:
-        # TODO (E5) : reconstruire l'arbre interné (round-trip exact).
-        raise NotImplementedError("CompactStore.get — à compléter (E5)")
+        symbol, label, kids_ids = self._nodes[nid]
+        return Term(symbol, tuple(self.get(k) for k in kids_ids), label)
 
     def total_nodes(self) -> int:
         return self._total
@@ -34,5 +36,6 @@ class CompactStore:
         return len(self._nodes)
 
     def compression(self) -> float:
-        # TODO (Q5) : 1 - uniques/total (0 si total == 0).
-        raise NotImplementedError("CompactStore.compression — à compléter (Q5)")
+        if self._total == 0:
+            return 0.0
+        return 1 - self.unique_nodes() / self._total

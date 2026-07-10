@@ -35,5 +35,26 @@ class TuringMachine:
 
     # ----- à compléter --------------------------------------------------------
     def run(self, word: str, max_steps: int = 1_000_000, trace: bool = False) -> "TMResult":
-        # TODO (E4.1)
-        raise NotImplementedError("TuringMachine.run — à compléter (E4.1)")
+        tape = {i: c for i, c in enumerate(word)}
+        pos = 0
+        state = self.start
+        steps = 0
+        trc = []
+        if trace:
+            trc.append((steps, state, self._window(tape)))
+        while state not in self.accept and state not in self.reject and steps < max_steps:
+            a = tape.get(pos, self.blank)
+            key = (state, a)
+            if key not in self.transitions:
+                break
+            state, b, d = self.transitions[key]
+            tape[pos] = b
+            if d == "L":
+                pos -= 1
+            elif d == "R":
+                pos += 1
+            steps += 1
+            if trace:
+                trc.append((steps, state, self._window(tape)))
+        return TMResult(accepted=state in self.accept, tape=self._read(tape),
+                         steps=steps, trace=trc)

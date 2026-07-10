@@ -5,16 +5,28 @@ from .turing import TuringMachine, TMResult
 
 
 def encode(machine: "TuringMachine") -> str:
-    # TODO (E4.2) : linéarisation INJECTIVE de M en JSON (chaîne <M>).
-    raise NotImplementedError("encode — à compléter (E4.2)")
+    data = {
+        "transitions": [[[q, a], [q2, b, d]] for (q, a), (q2, b, d) in machine.transitions.items()],
+        "start": machine.start,
+        "accept": sorted(machine.accept),
+        "reject": sorted(machine.reject),
+        "blank": machine.blank,
+    }
+    return json.dumps(data, sort_keys=True)
 
 
 def decode(desc: str) -> "TuringMachine":
-    # TODO (E4.2) : reconstruire M depuis <M> (réciproque exacte de encode).
-    raise NotImplementedError("decode — à compléter (E4.2)")
+    data = json.loads(desc)
+    transitions = {(q, a): (q2, b, d) for (q, a), (q2, b, d) in data["transitions"]}
+    return TuringMachine(
+        transitions=transitions,
+        start=data["start"],
+        accept=set(data["accept"]),
+        blank=data["blank"],
+        reject=set(data["reject"]),
+    )
 
 
 class UniversalTM:
     def run(self, encoded_machine: str, word: str, **kw) -> "TMResult":
-        # TODO (E4.2) : U décode <M> puis simule sur w.
-        raise NotImplementedError("UniversalTM.run — à compléter (E4.2)")
+        return decode(encoded_machine).run(word, **kw)
